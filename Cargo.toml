@@ -6,6 +6,8 @@ edition = "2021"
 license = "MIT"
 categories = ["parser-implementations"]
 keywords = ["iso6709", "latlon", "coordinates", "parse", "gps"]
+repository = "https://github.com/TimLikesTacos/iso6709parse.git"
+readme = "README.md"
 
 [dependencies]
 nom = "7"

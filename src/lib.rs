@@ -84,6 +84,13 @@ where
 }
 
 /// Parse either of the two different formats.  
+/// ```rust
+///use iso6709parse::parse;
+///
+///let coord: geo_types::Coord = parse("N35.50W170.10+8712CRSWGS_85/").unwrap();
+///assert_eq!(coord.y, 35.5);
+///
+///```
 pub fn parse<T>(str: &str) -> Result<T, ISO6709Error>
 where
     ISO6709Coord: Into<T>,
