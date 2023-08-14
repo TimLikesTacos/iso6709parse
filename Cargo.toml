@@ -8,7 +8,7 @@ categories = ["parser-implementations"]
 keywords = ["iso6709", "latlon", "coordinates", "parse", "gps"]
 repository = "https://github.com/TimLikesTacos/iso6709parse.git"
 readme = "README.md"
-
+description = "Parses coorindates in ISO6709 format from strings"
 [dependencies]
 nom = "7"
 geo-types = "0.7"
