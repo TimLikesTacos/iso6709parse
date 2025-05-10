@@ -101,11 +101,10 @@ where
     }
 }
 
-fn trim<'a, F: 'a, O, E: ParseError<&'a str>>(
-    inner: F,
-) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+fn trim<'a, F, O, E>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
 where
-    F: Fn(&'a str) -> IResult<&'a str, O, E>,
+    F: Fn(&'a str) -> IResult<&'a str, O, E> + 'a,
+    E: ParseError<&'a str>,
 {
     delimited(multispace0, inner, multispace0)
 }

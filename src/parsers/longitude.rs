@@ -102,20 +102,18 @@ pub mod string_expression {
         char.is_ascii() && is_digit(char as u8)
     }
 
-    fn parse_two<'a, F: 'a, O, E: ParseError<&'a str>>(
-        inner: F,
-    ) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+    fn parse_two<'a, F, O, E>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
     where
-        F: Fn(&'a str) -> IResult<&'a str, O, E>,
+        F: Fn(&'a str) -> IResult<&'a str, O, E> + 'a,
+        E: ParseError<&'a str>,
     {
         map_parser(take_while_m_n(2, 2, is_char_digit), inner)
     }
 
-    fn parse_three<'a, F: 'a, O, E: ParseError<&'a str>>(
-        inner: F,
-    ) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+    fn parse_three<'a, F, O, E>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
     where
-        F: Fn(&'a str) -> IResult<&'a str, O, E>,
+        F: Fn(&'a str) -> IResult<&'a str, O, E> + 'a,
+        E: ParseError<&'a str>,
     {
         map_parser(take_while_m_n(3, 3, is_char_digit), inner)
     }
