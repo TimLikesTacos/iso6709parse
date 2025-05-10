@@ -22,11 +22,11 @@ Also supports the "Human Readable" format:
 `DD°MM′SS.SSS″N DDD°MM′SS.SSS″W`  
 
 
-/// ```rust
-///use iso6709parse::parse;
-///
-///let coord: geo_types::Coord = parse("N35.50W170.10+8712CRSWGS_85/").unwrap();
-///assert_eq!(coord.y, 35.5);
-///
-///```
+```rust
+use iso6709parse::parse;
+
+let coord: geo_types::Coord = parse("N35.50W170.10+8712CRSWGS_85/").unwrap();
+assert_eq!(coord.y, 35.5);
+
+```
 
