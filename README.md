@@ -1,5 +1,7 @@
 # ISO6709 parser
 
+[![Rust CI](https://github.com/TimLikesTacos/iso6709parse/actions/workflows/rust-ci.yml/badge.svg)](https://github.com/TimLikesTacos/iso6709parse/actions/workflows/rust-ci.yml)
+
 This library uses the `nom` crate to create parsers to quickly convert ISO6709 formatted strings.  This results in a much faster parse than using Regex based libraries, from 4 to 10x faster.
 
 `From` traits have been implemented for the `geo_types` crate for easy conversion from strings.
