@@ -13,7 +13,7 @@ pub mod parsers {
     mod longitude;
 }
 mod error;
-use crate::error::ISO6709Error;
+pub use crate::error::ISO6709Error;
 
 /// The struct that this library's parses create.  `geo_types` `Point` and `Coord` have the `Into` traits  
 /// implemented for this struct, so using this struct is only needed if you wish to create your own struct or
