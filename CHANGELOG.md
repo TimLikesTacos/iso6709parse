@@ -1,3 +1,8 @@
+## [1.0.0] - 2025-08-03
+
+### 🚀 Features
+
+- [**breaking**] Upgrade to nom8
 ## [0.1.2] - 2025-05-31
 
 ### 🐛 Bug Fixes
