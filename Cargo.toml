@@ -1,8 +1,8 @@
 [package]
 name = "iso6709parse"
 authors = ["Tim Reed <thetimmyreed@gmail.com>"]
-version = "0.1.2"
-edition = "2021"
+version = "1.0.0"
+edition = "2024"
 license = "MIT"
 categories = ["parser-implementations"]
 keywords = ["iso6709", "latlon", "coordinates", "parse", "gps"]
@@ -11,11 +11,11 @@ readme = "README.md"
 description = "Parses coordinates in ISO6709 format from strings"
 
 [dependencies]
-nom = "7"
+nom = "8"
 geo-types = "0.7"
 
 [dev-dependencies]
-criterion = "0.5"
+criterion = "0.7"
 latlon = "0.1.3"
 
 [[bench]]

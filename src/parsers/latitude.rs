@@ -2,13 +2,13 @@
 use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::bytes::complete::take_while_m_n;
-use nom::character::complete::{digit0, u8};
-use nom::character::is_digit;
+use nom::character::complete::{digit1, u8};
 use nom::combinator::{map, opt, value};
 use nom::combinator::{map_parser, map_res, recognize};
 use nom::error::ParseError;
-use nom::sequence::tuple;
+use nom::AsChar;
 use nom::IResult;
+use nom::Parser;
 
 pub mod human_readable {
     use super::*;
@@ -17,15 +17,15 @@ pub mod human_readable {
     //     50°03′46.461″S 125°48′26.533″E 978.90m
 
     fn parse_north(inp: &str) -> IResult<&str, f64> {
-        value(1., tag("N"))(inp)
+        value(1., tag("N")).parse(inp)
     }
 
     fn parse_south(inp: &str) -> IResult<&str, f64> {
-        value(-1., tag("S"))(inp)
+        value(-1., tag("S")).parse(inp)
     }
 
     fn parse_north_or_south(inp: &str) -> IResult<&str, f64> {
-        alt((parse_north, parse_south))(inp)
+        alt((parse_north, parse_south)).parse(inp)
     }
 
     pub fn latitude_parser(inp: &str) -> IResult<&str, f64> {
@@ -92,22 +92,22 @@ pub mod string_expression {
     use super::*;
 
     fn parse_north(inp: &str) -> IResult<&str, f64> {
-        value(1., alt((tag("N"), tag("+"))))(inp)
+        value(1., alt((tag("N"), tag("+")))).parse(inp)
     }
 
     fn parse_south(inp: &str) -> IResult<&str, f64> {
-        value(-1., alt((tag("S"), tag("-"))))(inp)
+        value(-1., alt((tag("S"), tag("-")))).parse(inp)
     }
 
     fn parse_north_or_south(inp: &str) -> IResult<&str, f64> {
-        alt((parse_north, parse_south))(inp)
+        alt((parse_north, parse_south)).parse(inp)
     }
 
     fn is_char_digit(char: char) -> bool {
-        char.is_ascii() && is_digit(char as u8)
+        char.is_ascii() && AsChar::is_dec_digit(char as u8)
     }
 
-    fn parse_two<'a, F, O, E>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+    fn parse_two<'a, F, O, E>(inner: F) -> impl Parser<&'a str, Output = O, Error = E>
     where
         F: Fn(&'a str) -> IResult<&'a str, O, E> + 'a,
         E: ParseError<&'a str>,
@@ -116,11 +116,11 @@ pub mod string_expression {
     }
 
     fn parse_degree_integer(inp: &str) -> IResult<&str, f64> {
-        map(parse_two(u8), |x| x as f64)(inp)
+        map(parse_two(u8), |x| x as f64).parse(inp)
     }
 
     fn parse_degree_min_integer(inp: &str) -> IResult<&str, f64> {
-        let (rem, (degrees, minutes)) = tuple((parse_two(u8), parse_two(u8)))(inp)?;
+        let (rem, (degrees, minutes)) = (parse_two(u8), parse_two(u8)).parse(inp)?;
 
         if minutes >= 60 {
             Err(nom::Err::Failure(nom::error::Error::new(
@@ -134,7 +134,7 @@ pub mod string_expression {
 
     fn parse_degree_min_sec_integer(inp: &str) -> IResult<&str, f64> {
         let (rem, (degrees, minutes, seconds)) =
-            tuple((parse_two(u8), parse_two(u8), parse_two(u8)))(inp)?;
+            (parse_two(u8), parse_two(u8), parse_two(u8)).parse(inp)?;
 
         if minutes >= 60 || seconds >= 60 {
             Err(nom::Err::Failure(nom::error::Error::new(
@@ -150,26 +150,24 @@ pub mod string_expression {
     }
 
     fn parse_decimal(inp: &str) -> IResult<&str, f64> {
-        map_res(recognize(tuple((tag("."), digit0))), |x: &str| {
-            x.parse::<f64>()
-        })(inp)
+        map_res(recognize((tag("."), digit1)), |x: &str| x.parse::<f64>()).parse(inp)
     }
 
     fn parse_degree(inp: &str) -> IResult<&str, f64> {
         let (decimalstr, int) = parse_degree_integer(inp)?;
-        let (rem, dec) = opt(parse_decimal)(decimalstr)?;
+        let (rem, dec) = opt(parse_decimal).parse(decimalstr)?;
         Ok((rem, int + dec.unwrap_or(0.)))
     }
 
     fn parse_degree_minute(inp: &str) -> IResult<&str, f64> {
         let (decimalstr, int) = parse_degree_min_integer(inp)?;
-        let (rem, dec) = opt(parse_decimal)(decimalstr)?;
+        let (rem, dec) = opt(parse_decimal).parse(decimalstr)?;
         Ok((rem, int + dec.unwrap_or(0.) / 60.))
     }
 
     fn parse_degree_minute_second(inp: &str) -> IResult<&str, f64> {
         let (decimalstr, int) = parse_degree_min_sec_integer(inp)?;
-        let (rem, dec) = opt(parse_decimal)(decimalstr)?;
+        let (rem, dec) = opt(parse_decimal).parse(decimalstr)?;
         Ok((rem, int + dec.unwrap_or(0.) / 3600.))
     }
 
@@ -181,7 +179,8 @@ pub mod string_expression {
             parse_degree_minute_second,
             parse_degree_minute,
             parse_degree,
-        ))(lat)?;
+        ))
+        .parse(lat)?;
         if value > 90.0 {
             Err(nom::Err::Failure(nom::error::Error::new(
                 lat,

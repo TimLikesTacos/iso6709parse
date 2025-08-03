@@ -3,6 +3,7 @@ use nom::error::ParseError;
 use nom::sequence::delimited;
 use nom::Finish;
 use nom::IResult;
+use nom::Parser;
 use parsers::iso6709;
 
 pub mod parsers {
@@ -54,8 +55,9 @@ pub fn parse_readable<T>(str: &str) -> Result<T, ISO6709Error>
 where
     ISO6709Coord: Into<T>,
 {
-    let (_, ((lat, lon), altitude)) =
-        trim(iso6709::human_readable::latlong_altitude_option_parser)(str).finish()?;
+    let (_, ((lat, lon), altitude)) = trim(iso6709::human_readable::latlong_altitude_option_parser)
+        .parse(str)
+        .finish()?;
     Ok(ISO6709Coord { lat, lon, altitude }.into())
 }
 
@@ -79,7 +81,9 @@ where
     ISO6709Coord: Into<T>,
 {
     let (_, ((lat, lon), altitude)) =
-        trim(iso6709::string_expression::latlong_altitude_option_parser)(str).finish()?;
+        trim(iso6709::string_expression::latlong_altitude_option_parser)
+            .parse(str)
+            .finish()?;
     Ok(ISO6709Coord { lat, lon, altitude }.into())
 }
 
@@ -101,7 +105,7 @@ where
     }
 }
 
-fn trim<'a, F, O, E>(inner: F) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+fn trim<'a, F, O, E>(inner: F) -> impl nom::Parser<&'a str, Output = O, Error = E>
 where
     F: Fn(&'a str) -> IResult<&'a str, O, E> + 'a,
     E: ParseError<&'a str>,

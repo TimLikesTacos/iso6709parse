@@ -7,7 +7,8 @@ pub mod human_readable {
     use crate::parsers::longitude::human_readable::*;
     use nom::character::complete::space1;
     use nom::combinator::opt;
-    use nom::sequence::{preceded, separated_pair, tuple};
+    use nom::sequence::{preceded, separated_pair};
+    use nom::Parser;
 
     /// Parser to obtain lat long
     ///
@@ -22,7 +23,7 @@ pub mod human_readable {
     /// ```
     ///  
     pub fn latlong_parser(inp: &str) -> IResult<&str, (f64, f64)> {
-        separated_pair(latitude_parser, space1, longitude_parser)(inp)
+        separated_pair(latitude_parser, space1, longitude_parser).parse(inp)
     }
 
     /// Parser to obtain lat long and altitude. Note that the lat, long are within their own tuple, inside the output tuple.
@@ -39,7 +40,7 @@ pub mod human_readable {
     /// ```
     ///  
     pub fn latlong_altitude_parser(inp: &str) -> IResult<&str, ((f64, f64), f64)> {
-        separated_pair(latlong_parser, space1, altitude_parser)(inp)
+        separated_pair(latlong_parser, space1, altitude_parser).parse(inp)
     }
 
     /// Parser to obtain lat long and altitude if the altitude is present. Note that the lat, long are within their own tuple, inside the output tuple.
@@ -56,7 +57,7 @@ pub mod human_readable {
     /// ```
     ///  
     pub fn latlong_altitude_option_parser(inp: &str) -> IResult<&str, ((f64, f64), Option<f64>)> {
-        tuple((latlong_parser, opt(preceded(space1, altitude_parser))))(inp)
+        (latlong_parser, opt(preceded(space1, altitude_parser))).parse(inp)
     }
 
     #[cfg(test)]
@@ -92,7 +93,7 @@ pub mod string_expression {
     pub use crate::parsers::latitude::string_expression::latitude_parser;
     pub use crate::parsers::longitude::string_expression::longitude_parser;
     use nom::combinator::opt;
-    use nom::sequence::tuple;
+    use nom::Parser;
 
     /// Parser to obtain lat long
     ///
@@ -107,7 +108,7 @@ pub mod string_expression {
     /// ```
     ///  
     pub fn latlong_parser(inp: &str) -> IResult<&str, (f64, f64)> {
-        tuple((latitude_parser, longitude_parser))(inp)
+        (latitude_parser, longitude_parser).parse(inp)
     }
 
     /// Parser to obtain lat long and altitude. Note that the lat, long are within their own tuple, inside the output tuple.
@@ -124,7 +125,7 @@ pub mod string_expression {
     /// ```
     ///  
     pub fn latlong_altitude_parser(inp: &str) -> IResult<&str, ((f64, f64), f64)> {
-        tuple((latlong_parser, altitude_parser))(inp)
+        (latlong_parser, altitude_parser).parse(inp)
     }
 
     // Parser to obtain lat long and, if exists, the altitude. Note that the lat, long are within their own tuple, inside the output tuple.
@@ -141,7 +142,7 @@ pub mod string_expression {
     /// ```
     ///  
     pub fn latlong_altitude_option_parser(inp: &str) -> IResult<&str, ((f64, f64), Option<f64>)> {
-        tuple((latlong_parser, opt(altitude_parser)))(inp)
+        (latlong_parser, opt(altitude_parser)).parse(inp)
     }
     #[cfg(test)]
     mod string_expression_tests {

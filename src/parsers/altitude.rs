@@ -2,11 +2,12 @@ use nom::branch::alt;
 use nom::bytes::complete::tag;
 use nom::bytes::complete::{is_not, take_while};
 use nom::character::complete::{alpha1, digit1};
-use nom::character::is_digit;
 use nom::combinator::map_res;
 use nom::combinator::value;
-use nom::sequence::{pair, preceded, tuple};
+use nom::sequence::{pair, preceded};
+use nom::AsChar;
 use nom::IResult;
+use nom::Parser;
 
 pub mod human_readable {
     use super::*;
@@ -21,10 +22,10 @@ pub mod human_readable {
     }
 
     fn is_part_of_float(ch: char) -> bool {
-        ch.is_ascii() && (is_digit(ch as u8) || ch == '.')
+        ch.is_ascii() && (AsChar::is_dec_digit(ch as u8) || ch == '.')
     }
     fn altitude_decimal(inp: &str) -> IResult<&str, f64> {
-        map_res(take_while(is_part_of_float), |x: &str| x.parse::<f64>())(inp)
+        map_res(take_while(is_part_of_float), |x: &str| x.parse::<f64>()).parse(inp)
     }
 
     pub fn altitude_parser(inp: &str) -> IResult<&str, f64> {
@@ -64,35 +65,35 @@ pub mod string_expression {
     use super::*;
 
     fn parse_positive(inp: &str) -> IResult<&str, f64> {
-        value(1., tag("+"))(inp)
+        value(1., tag("+")).parse(inp)
     }
 
     fn parse_negative(inp: &str) -> IResult<&str, f64> {
-        value(-1., tag("-"))(inp)
+        value(-1., tag("-")).parse(inp)
     }
 
     fn parse_sign(inp: &str) -> IResult<&str, f64> {
-        alt((parse_positive, parse_negative))(inp)
+        alt((parse_positive, parse_negative)).parse(inp)
     }
 
     // Unsure if decimals are allowed, so we will support both
     fn altitude(inp: &str) -> IResult<&str, f64> {
         // Order matters
-        alt((altitude_decimal, altitude_int))(inp)
+        alt((altitude_decimal, altitude_int)).parse(inp)
     }
 
     fn is_part_of_float(ch: char) -> bool {
-        ch.is_ascii() && (is_digit(ch as u8) || ch == '.')
+        ch.is_ascii() && (AsChar::is_dec_digit(ch as u8) || ch == '.')
     }
     fn altitude_decimal(inp: &str) -> IResult<&str, f64> {
-        map_res(take_while(is_part_of_float), |x: &str| x.parse::<f64>())(inp)
+        map_res(take_while(is_part_of_float), |x: &str| x.parse::<f64>()).parse(inp)
     }
     fn altitude_int(inp: &str) -> IResult<&str, f64> {
-        map_res(digit1, |x: &str| x.parse::<f64>())(inp)
+        map_res(digit1, |x: &str| x.parse::<f64>()).parse(inp)
     }
 
     fn parse_altitude_digits(inp: &str) -> IResult<&str, f64> {
-        let (rem, (sign, altitude)) = tuple((parse_sign, altitude))(inp)?;
+        let (rem, (sign, altitude)) = (parse_sign, altitude).parse(inp)?;
         Ok((rem, sign * altitude))
     }
 
@@ -101,7 +102,7 @@ pub mod string_expression {
     /// Only returns the altitude in f64
     pub(crate) fn altitude_parser(altitude_with_crs: &str) -> IResult<&str, f64> {
         let (reference_system, (alt, _)) =
-            pair(parse_altitude_digits, tag("CRS"))(altitude_with_crs)?;
+            pair(parse_altitude_digits, tag("CRS")).parse(altitude_with_crs)?;
         Ok((reference_system, alt))
     }
 
@@ -110,7 +111,7 @@ pub mod string_expression {
     /// +2122CRSWGS_85
     /// Only returns the CRS (Coordinate Reference System)
     pub(crate) fn crs_parser(altitude_with_crs: &str) -> IResult<&str, &str> {
-        preceded(altitude_parser, is_not("/"))(altitude_with_crs)
+        preceded(altitude_parser, is_not("/")).parse(altitude_with_crs)
     }
 
     #[cfg(test)]

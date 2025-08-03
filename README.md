@@ -21,6 +21,9 @@ along with altitude when properly formatted IAW ISO6709, for example `+1200.00-0
 Also supports the "Human Readable" format:
 `DD°MM′SS.SSS″N DDD°MM′SS.SSS″W`  
 
+If you are using the nom parsers directly, you need the version that matches your `nom` version.  
+Version 0.x.x supports `nom` version 7  
+Version 1.x.x supports `nom` version 8  
 
 ```rust
 use iso6709parse::parse;
